@@ -4,7 +4,11 @@ var url = require('url')
 var StringDecoder = require('string_decoder').StringDecoder
 var environment = require('../config/config')
 var fs = require('fs')
+const crypto = require('crypto')
+
 const _data = require('./lib/data')
+const router = require('./lib/router')
+const helpers = require('./lib/helpers')
 
 var unifiedServer = function(req, res) {
 
@@ -40,10 +44,11 @@ var unifiedServer = function(req, res) {
       'queryString' : queryString,
       'method': method,
       'headers': headers,
-      'payload': buffer
+      'payload': helpers.parseJsonFromString(buffer)
     }
 
-    var handler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound
+    let handler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : router['notFound']
+
     handler(data, function(statusCode, payload) {
 
       var _statusCode = typeof(statusCode) == 'number' ? statusCode : 200
@@ -82,11 +87,6 @@ handlers.notFound = function(data, callback) {
   callback(404, { 'name' : 'sample handler'} )
 }
 
-var router = {
-  'sample': handlers.sample,
-  'notFound': handlers.notFound,
-}
-
 // Starts the HTTP server and listen to the port 3000
 httpServer.listen(environment.httpPort, function() {
   console.log("The assignment's #2 http server is ready and listening at port " + environment.httpPort + " - with environment name = " + environment.envName + ".")
@@ -97,38 +97,9 @@ httpsServer.listen(environment.httpsPort, function() {
   console.log("The assignment's #2 https server is ready and listening at port " + environment.httpsPort + " - with environment name = " + environment.envName + ".")
 })
 
-const fileName = 'newFile2'
+let result = crypto.createHmac('sha256', environment.hashingSecret)
+result = result.update('luana1')
+result = result.digest('hex')
+console.log(result)
 
-/*
-_data.create('test', fileName, {'foo':'bar'}, function(err) {
-  if (err) {
-    console.log('This was the error when trying to write to the file', err)
-  }
-})
-*/
-
-/*
-_data.read('test', fileName, function(err, data) {
-  if (!err) {
-    console.log('Read data', data)
-  } else {
-    console.log('This is the error found when trying to read the file.', err)
-  }
-})
-*/
-
-/*
-_data.update('test', fileName, {'foo3':'bar3'}, function(err) {
-  if (err) {
-    console.log('This was the error when trying to update the file', err)
-  }
-})
-*/
-
-_data.delete('test', fileName, function(err) {
-  if (!err) {
-    console.log('The file was removed.')
-  } else {
-    console.log('This is the error found when trying to delete the file.', err)
-  }
-})
+console.log(helpers.hash('luana1'))
