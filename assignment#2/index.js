@@ -2,8 +2,9 @@ var http = require('http')
 var https = require('https')
 var url = require('url')
 var StringDecoder = require('string_decoder').StringDecoder
-var environment = require('../config')
+var environment = require('../config/config')
 var fs = require('fs')
+const _data = require('./lib/data')
 
 var unifiedServer = function(req, res) {
 
@@ -46,8 +47,8 @@ var unifiedServer = function(req, res) {
     handler(data, function(statusCode, payload) {
 
       var _statusCode = typeof(statusCode) == 'number' ? statusCode : 200
-      res.writeHead(_statusCode)
       res.setHeader("Content-Type","application/json")
+      res.writeHead(_statusCode)      
       var _payload = JSON.stringify(typeof(payload) == 'object' ? payload : {})
       res.end(_payload)
 
@@ -56,15 +57,13 @@ var unifiedServer = function(req, res) {
   })
 }
 
-
-
 // Instantiate the HTTP server
 var httpServer = http.createServer(unifiedServer)
 
 // HTTPS server configuration
 var httpsServerOptions = {
-  'key' : fs.readFileSync('../https/key.pem'),
-  'cert' : fs.readFileSync('../https/cert.pem')
+  'key' : fs.readFileSync('../config/key.pem'),
+  'cert' : fs.readFileSync('../config/cert.pem')
 }
 // Instantiate the HTTPS server
 var httpsServer = https.createServer(httpsServerOptions, unifiedServer)
@@ -96,4 +95,40 @@ httpServer.listen(environment.httpPort, function() {
 // Starts the HTTP server and listen to the port 3000
 httpsServer.listen(environment.httpsPort, function() {
   console.log("The assignment's #2 https server is ready and listening at port " + environment.httpsPort + " - with environment name = " + environment.envName + ".")
+})
+
+const fileName = 'newFile2'
+
+/*
+_data.create('test', fileName, {'foo':'bar'}, function(err) {
+  if (err) {
+    console.log('This was the error when trying to write to the file', err)
+  }
+})
+*/
+
+/*
+_data.read('test', fileName, function(err, data) {
+  if (!err) {
+    console.log('Read data', data)
+  } else {
+    console.log('This is the error found when trying to read the file.', err)
+  }
+})
+*/
+
+/*
+_data.update('test', fileName, {'foo3':'bar3'}, function(err) {
+  if (err) {
+    console.log('This was the error when trying to update the file', err)
+  }
+})
+*/
+
+_data.delete('test', fileName, function(err) {
+  if (!err) {
+    console.log('The file was removed.')
+  } else {
+    console.log('This is the error found when trying to delete the file.', err)
+  }
 })

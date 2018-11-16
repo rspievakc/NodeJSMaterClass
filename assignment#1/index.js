@@ -1,7 +1,7 @@
 var http = require('http')
 var url = require('url')
 var StringDecoder = require('string_decoder').StringDecoder
-var environment = require('../config')
+var environment = require('../config/config')
 var fs = require('fs')
 
 var unifiedServer = function(req, res) {
